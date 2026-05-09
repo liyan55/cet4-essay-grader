@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "CET4 Essay Grader",
+  "version": "1.0.0",
+  "description": "Your AI-powered English essay grading companion. Submit essays and receive detailed feedback across 5 dimensions: content, logic, vocabulary, grammar, and structure.",
+  "permissions": ["activeTab", "scripting", "storage", "tabs", "sidePanel"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "CET4 Essay Grader"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  }
+}

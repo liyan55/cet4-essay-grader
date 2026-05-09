@@ -1,0 +1,43 @@
+# CET4 Essay Grader - Git Ignore
+
+# Environment variables (API keys - NEVER commit these!)
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Build files
+dist/
+build/
+*.pyc
+__pycache__/
+
+# Chrome extension
+*.pem
+
+# Node modules (if any)
+node_modules/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Personal notes
+notes.md
+todo.md
+*.txt.local

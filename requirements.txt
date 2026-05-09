@@ -1,0 +1,14 @@
+# CET4 Essay Grader Dependencies
+
+# AG2 (AutoGen 2) - Core multi-agent framework
+ag2>=0.2.0
+
+# Alternative: pyautogen if ag2 not available
+# pyautogen>=0.2.19
+
+# Note: This is a Chrome extension project,
+# the actual dependencies are managed by the browser's extension runtime.
+# This file is provided for compatibility and to declare AG2 usage.
+
+# For local development (if you want to test scripts separately):
+# pip install -r requirements.txt
