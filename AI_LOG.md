@@ -135,12 +135,66 @@ Fork memo-in-browser-ag2 and transform it into a CET4 essay grading tool.
 
 ---
 
+## 🖼️ Iteration 7 - Multi-Image Upload Enhancement (2026-05-10)
+
+**Goal:** Support uploading multiple essay images (max 5) and fix UI layout issues
+
+**User Requests:**
+1. > 可以设置批改是可以提交多张照片吗？最多提交5张照片
+2. > 扩展程序里面可以设置一个下滑侧栏吗？上传完多张图片后，批改键被顶到下面显示不出来了，无法点批改键
+
+**Key Features Added:**
+
+### sidepanel.html - Layout Improvements
+- Added image counter display (0/5)
+- Added grid-based image preview container
+- Moved "Grade" button to fixed bottom action bar
+
+### sidepanel.css - New Styles
+- Added `.image-preview-grid` for multi-image display
+- Added `.image-preview-item` with remove button and filename
+- Added `.bottom-actions` for fixed bottom positioning
+- Added scrollable content area with padding for bottom bar
+
+### sidepanel.js - Multi-Image Logic
+- Changed `currentImageData` to `currentImages` array
+- Added `MAX_IMAGES = 5` constant
+- Added batch file selection with limit enforcement
+- Added grid-based preview generation
+- Added individual image removal
+- Added "Clear All" functionality
+- Enhanced OCR to process multiple images sequentially
+- Added progress tracking during multi-image OCR
+- Added result merging for multi-image OCR
+- Added smart bottom bar visibility control
+
+**New functionality:**
+1. **Multi-Image Upload**:
+   - Support for up to 5 images at once
+   - Grid preview with thumbnails
+   - Individual image delete buttons
+   - "Clear All" button for batch removal
+
+2. **Fixed Bottom Action Bar**:
+   - "Grade" button always visible at bottom
+   - Auto-hides when grading result is shown
+   - Content area scrolls beneath the bar
+   - Safe area inset support for mobile devices
+
+3. **Enhanced OCR Flow**:
+   - Processes images one by one
+   - Shows progress indicator (e.g., "Processing image 2/5")
+   - Merges text results from all images
+   - Auto-syncs merged text to input area
+
+---
+
 ## 📝 Summary
 
-Total Iterations: 6
+Total Iterations: 7
 Core Pattern: AG2-inspired tool-using agent
 Tools: 5 specialized grading tools + OCR tool
 Framework: Chrome Manifest V3 extension
-Key Features: Dual-mode input (text/image), OCR, multi-agent grading, learning tracking
+Key Features: Dual-mode input (text/image), Multi-image upload (max 5), OCR, multi-agent grading, learning tracking, Fixed bottom action bar
 
 *[End of AI_LOG]*
