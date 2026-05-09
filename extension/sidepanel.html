@@ -56,19 +56,19 @@
         <!-- Image Upload Mode -->
         <div id="image-input-mode" class="input-mode hidden">
           <div class="form-group">
-            <label>Upload Essay Image (上传作文图片)</label>
+            <label>Upload Essay Images (上传作文图片) <span id="image-count">0/5</span></label>
             <div class="image-upload-area" id="image-upload-area">
-              <input type="file" id="image-input" accept="image/*" style="display: none;">
+              <input type="file" id="image-input" accept="image/*" multiple style="display: none;">
               <div class="upload-prompt" id="upload-prompt">
                 <div class="upload-icon">📸</div>
-                <p>Click or drag your essay image here</p>
-                <p class="sub-hint">支持手写体和打印体 (Handwritten or printed)</p>
+                <p>Click or drag your essay images here</p>
+                <p class="sub-hint">支持手写体和打印体，最多上传5张图片 (Max 5 images)</p>
               </div>
-              <div class="image-preview hidden" id="image-preview-container">
-                <img id="preview-image" alt="Essay preview">
-                <button id="remove-image" class="ghost small">Remove</button>
+              <div id="image-preview-grid" class="image-preview-grid">
+                <!-- 动态生成图片预览 -->
               </div>
             </div>
+            <button id="clear-all-images" class="ghost small danger">🗑️ Clear All (清除全部)</button>
           </div>
           
           <div class="form-group">
@@ -91,16 +91,18 @@
           </div>
         </div>
         
-        <button id="grade-btn" class="primary btn-large">
-          🚀 开始批改
-        </button>
-        
         <div class="sample-essays">
           <p class="hint">Try sample essays:</p>
           <button class="sample-btn" data-sample="reading">📚 The Importance of Reading</button>
           <button class="sample-btn" data-sample="technology">💻 Technology in Our Lives</button>
           <button class="sample-btn" data-sample="environment">🌍 Environmental Protection</button>
         </div>
+      </div>
+      
+      <div class="bottom-actions">
+        <button id="grade-btn" class="primary btn-large">
+          🚀 开始批改
+        </button>
       </div>
       
       <div id="result-section" class="result-section hidden">

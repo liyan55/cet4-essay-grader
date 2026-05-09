@@ -48,8 +48,9 @@ I believe that if everyone does their part, we can make the world a better place
 };
 
 // 全局状态
-let currentImageData = null;
+let currentImages = [];
 let isEditMode = false;
+const MAX_IMAGES = 5;
 
 // 视图标签页切换
 document.querySelectorAll(".appbar-tab").forEach(btn => {
@@ -140,70 +141,132 @@ imageUploadArea.addEventListener("drop", (e) => {
 
 // 处理文件选择
 async function handleFileSelect(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  const files = Array.from(e.target.files || []);
+  if (files.length === 0) return;
   
-  if (!file.type.startsWith("image/")) {
+  const validFiles = files.filter(f => f.type.startsWith("image/"));
+  if (validFiles.length === 0) {
     alert("请选择图片文件！");
     return;
   }
   
-  // 读取图片
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    currentImageData = event.target.result;
-    displayImagePreview(currentImageData);
-  };
-  reader.readAsDataURL(file);
+  const remainingSlots = MAX_IMAGES - currentImages.length;
+  const filesToAdd = validFiles.slice(0, remainingSlots);
+  
+  if (filesToAdd.length < validFiles.length) {
+    alert(`最多只能上传${MAX_IMAGES}张图片，已添加${filesToAdd.length}张`);
+  }
+  
+  for (const file of filesToAdd) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageData = event.target.result;
+      currentImages.push({
+        data: imageData,
+        name: file.name
+      });
+      updateImagePreview();
+    };
+    reader.readAsDataURL(file);
+  }
+  
+  e.target.value = "";
 }
 
-// 显示图片预览
-function displayImagePreview(imageData) {
-  $("preview-image").src = imageData;
-  $("upload-prompt").classList.add("hidden");
-  $("image-preview-container").classList.remove("hidden");
+// 更新图片预览网格
+function updateImagePreview() {
+  const grid = $("image-preview-grid");
+  const prompt = $("upload-prompt");
+  
+  if (currentImages.length === 0) {
+    grid.innerHTML = "";
+    prompt.classList.remove("hidden");
+    grid.classList.add("hidden");
+  } else {
+    prompt.classList.add("hidden");
+    grid.classList.remove("hidden");
+    
+    grid.innerHTML = currentImages.map((img, index) => `
+      <div class="image-preview-item">
+        <img src="${img.data}" alt="Image ${index + 1}">
+        <button class="remove-image-btn" data-index="${index}">×</button>
+        <span class="image-name">${img.name}</span>
+      </div>
+    `).join("");
+    
+    // 为每个删除按钮添加事件
+    grid.querySelectorAll(".remove-image-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const index = parseInt(e.target.dataset.index);
+        removeImage(index);
+      });
+    });
+  }
+  
+  // 更新图片计数
+  $("image-count").textContent = `${currentImages.length}/${MAX_IMAGES}`;
 }
 
-// 移除图片
-$("remove-image").addEventListener("click", () => {
-  currentImageData = null;
+// 移除单张图片
+function removeImage(index) {
+  currentImages.splice(index, 1);
+  updateImagePreview();
+  
+  // 如果没有图片了，清空OCR结果
+  if (currentImages.length === 0) {
+    $("ocr-text-output").value = "";
+    $("ocr-status").textContent = "";
+  }
+}
+
+// 清除所有图片
+$("clear-all-images").addEventListener("click", () => {
+  currentImages = [];
   $("image-input").value = "";
-  $("image-preview-container").classList.add("hidden");
-  $("upload-prompt").classList.remove("hidden");
+  updateImagePreview();
   $("ocr-text-output").value = "";
   $("ocr-status").textContent = "";
 });
 
 // 执行OCR
 $("ocr-btn").addEventListener("click", async () => {
-  if (!currentImageData) {
+  if (currentImages.length === 0) {
     alert("请先上传作文图片！");
     return;
   }
   
   const statusEl = $("ocr-status");
-  statusEl.textContent = "识别中，请稍候...";
+  statusEl.textContent = `正在识别第 1/${currentImages.length} 张图片...`;
   $("ocr-btn").disabled = true;
   
   try {
-    const result = await send({
-      type: "ocr-image",
-      imageData: currentImageData
-    });
+    let allText = "";
     
-    $("ocr-text-output").value = result.text;
-    statusEl.textContent = "识别成功！";
+    for (let i = 0; i < currentImages.length; i++) {
+      statusEl.textContent = `正在识别第 ${i + 1}/${currentImages.length} 张图片...`;
+      
+      const result = await send({
+        type: "ocr-image",
+        imageData: currentImages[i].data
+      });
+      
+      if (result.text) {
+        allText += result.text + "\n\n";
+      }
+    }
     
-    // 如果是文字模式，自动填充
+    $("ocr-text-output").value = allText.trim();
+    statusEl.textContent = `识别完成！共识别 ${currentImages.length} 张图片`;
+    
     if (!$("image-input-mode").classList.contains("hidden")) {
-      $("essay-input").value = result.text;
-      const words = result.text.trim().split(/\s+/).filter(Boolean).length;
+      $("essay-input").value = allText.trim();
+      const words = allText.trim().split(/\s+/).filter(Boolean).length;
       $("word-count").textContent = words;
     }
     
     setTimeout(() => {
       statusEl.textContent = "";
-    }, 2000);
+    }, 3000);
     
   } catch (e) {
     statusEl.textContent = `识别失败: ${e.message}`;
@@ -285,11 +348,13 @@ $("grade-btn").addEventListener("click", async () => {
   const resultSection = $("result-section");
   const status = $("grading-status");
   const content = $("result-content");
+  const viewGrader = $("view-grader");
 
   resultSection.classList.remove("hidden");
   status.classList.remove("hidden");
   status.querySelector("p").textContent = "批改中，请稍候...";
   content.innerHTML = "";
+  viewGrader.classList.add("result-visible");
 
   $("grade-btn").disabled = true;
   $("grade-btn").textContent = "批改中...";
@@ -319,9 +384,11 @@ $("grade-btn").addEventListener("click", async () => {
 $("clear-result").addEventListener("click", () => {
   const resultSection = $("result-section");
   const content = $("result-content");
+  const viewGrader = $("view-grader");
 
   resultSection.classList.add("hidden");
   content.innerHTML = "";
+  viewGrader.classList.remove("result-visible");
 });
 
 // 保存报告
