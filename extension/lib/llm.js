@@ -105,9 +105,26 @@ export async function chat({
   validateKeyMatchesProvider(provider, apiKey);
   model = normalizeModelForProvider(provider, model);
 
+  const processedMessages = messages.map(msg => {
+    if (msg.images && msg.images.length > 0) {
+      const content = [];
+      if (msg.content && typeof msg.content === 'string') {
+        content.push({ type: 'text', text: msg.content });
+      }
+      for (const imageData of msg.images) {
+        content.push({
+          type: 'image_url',
+          image_url: { url: imageData }
+        });
+      }
+      return { ...msg, content };
+    }
+    return msg;
+  });
+
   const body = {
     model: model || cfg.defaultModel,
-    messages,
+    messages: processedMessages,
     temperature
   };
   if (tools && tools.length) body.tools = tools;
