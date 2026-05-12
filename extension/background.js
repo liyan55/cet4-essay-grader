@@ -1,88 +1,152 @@
 import { chat } from "./lib/llm.js";
 
 // Mock批改数据（用于离线模式）
-const MOCK_GRADING_REPORT = `# 📊 作文批改报告
+const MOCK_GRADING_REPORT = `# 📊 英语四级作文批改报告
 
 ## 📋 作文信息
 - 题目：The Importance of Reading
 - 字数：106词
+- 批改日期：${new Date().toLocaleDateString()}
+- 批改版本：Mock（离线模式）
 
 ---
 
 ## 🎯 总体评分：**75/100**
 
-| 评分维度 | 得分 | 评价 |
-|---------|------|------|
-| **内容与观点** | **18/25** | 文章切题，论点清晰，但可以更深入 |
-| **语言准确性** | **17/25** | 有少量语法和词汇错误，整体通顺 |
-| **连贯与衔接** | **20/25** | 逻辑清晰，过渡自然 |
-| **句子结构** | **20/25** | 句型多样，表达流畅 |
+### 评分详情
+
+| 评分维度 | 得分 | 满分 | 评价等级 | 详细评价 |
+|---------|------|------|----------|----------|
+| **内容与观点** | **18/25** | 25 | B+ | 文章切题，论点明确，能围绕"阅读的重要性"展开论述，但论点深度和细节支撑不足 |
+| **语言准确性** | **17/25** | 25 | B | 有少量语法错误和词汇搭配问题，但不影响整体理解，表达基本通顺 |
+| **连贯与衔接** | **20/25** | 25 | A- | 逻辑清晰，段落过渡自然，使用了基本的连接词 |
+| **句子结构** | **20/25** | 25 | A- | 句型有一定多样性，包含简单句和复合句，表达流畅 |
+
+### 评分分析
+- **优点**：结构完整、论点清晰、表达流畅
+- **待改进**：语言准确性、内容深度
 
 ---
 
-## ✅ 优点
+## ✅ 文章优点
 
-1. **主题明确**：清晰表达了阅读的重要性
-2. **结构合理**：有引言、主体和结论
-3. **论点清晰**：从知识、写作两个方面展开
-4. **表达流畅**：句子通顺，易于理解
+### 内容方面
+1. **主题明确**：文章紧扣"阅读的重要性"这一主题，论点清晰
+2. **结构完整**：有引言（引入话题）、主体（分论点论述）、结论（总结观点）三部分
+3. **论点合理**：从"获取知识"和"提高写作能力"两个角度论证阅读的重要性
+4. **观点积极**：传达了阅读有益的积极价值观
+
+### 语言表达方面
+1. **表达流畅**：句子通顺，读者能够轻松理解作者意图
+2. **词汇基础**：掌握了基本的四级词汇，能够表达基本概念
+3. **句型多样**：使用了简单句、并列句和复合句，句式有一定变化
+4. **衔接自然**：使用了"First of all", "Secondly", "In conclusion"等过渡词
 
 ---
 
-## ⚠️ 主要问题
+## ⚠️ 存在问题与修改建议
 
-### 语法错误
+### 一、典型语法错误
 
-1. **"more and more people prefer watching videos"** → 建议改为 "more and more people prefer to watch videos"
-2. **"makes us know more things"** → 建议改为 "helps us learn more"
+| 序号 | 原句 | 错误类型 | 修改建议 | 错误解释 |
+|------|------|----------|----------|----------|
+| 1 | *"more and more people prefer watching videos"* | 固定搭配错误 | **"more and more people prefer to watch videos"** | "prefer to do sth." 是正确搭配，"prefer doing" 不常用 |
+| 2 | *"makes us know more things"* | 动词搭配不当 | **"helps us learn more"** | "make sb. do sth." 强调强迫，"help sb. do sth." 更符合语境 |
+| 3 | *"keep us know"* | 动词用法错误 | **"help us learn"** 或 **"enable us to know"** | "keep" 后接动词-ing形式，此处语义也不合适 |
+| 4 | *"With the rapid development of technology"* | 句式模板化 | **"In today's digital age"** 或 **"As technology advances"** | 此句过于模板化，建议使用更自然的表达 |
 
-### 词汇搭配
+### 二、词汇搭配问题
 
-1. **"keep us know"** → 建议改为 "help us learn"
-2. **"makes us know more"** → 建议改为 "expands our knowledge"
+| 序号 | 原句 | 问题类型 | 修改建议 | 说明 |
+|------|------|----------|----------|------|
+| 1 | *"makes us know more"* | 表达单调 | **"expands our knowledge"** 或 **"broadens our horizons"** | 避免重复使用"know"，使用更高级的表达 |
+| 2 | *"gain knowledge"* | 搭配一般 | **"acquire knowledge"** 或 **"obtain knowledge"** | "acquire" 比 "gain" 更正式准确 |
+| 3 | *"improve our writing skills"* | 搭配一般 | **"enhance our writing skills"** 或 **"develop our writing abilities"** | "enhance" 更能体现提升的意味 |
 
-### 逻辑衔接
+### 三、句子结构问题
 
-- 第二段和第三段之间可以添加更自然的过渡词
+1. **句子过于简单**：部分句子结构单一，建议增加复合句使用
+   - 原句：*"Reading is important. It helps us."*
+   - 修改：*"Reading is of great importance as it helps us..."*
+
+2. **句子长度相似**：句子长度较为接近，建议长短句结合
+   - 长句：使用从句、分词结构增加复杂度
+   - 短句：用于强调重点
+
+### 四、逻辑衔接问题
+
+- **段落过渡生硬**：第二段和第三段之间缺乏自然过渡
+  - 建议添加：*"Furthermore,"* 或 *"In addition to acquiring knowledge,"*
+- **连接词使用有限**：过度依赖"First", "Second"等基础连接词
+  - 建议使用：*"Moreover", "Furthermore", "Additionally", "Consequently"* 等
 
 ---
 
 ## 📝 改进建议
 
-### 短期改进
-1. 仔细检查时态和主谓一致
-2. 增加一些高级词汇（如 broaden our horizons, enhance our understanding）
-3. 添加更多细节和例子来支持论点
+### 短期改进（本周可完成）
 
-### 长期提升
-1. 每周背诵5-10个实用表达
-2. 阅读范文，学习论证结构
-3. 练习多样化的句型
+1. **语法强化**
+   - 复习"prefer", "help", "make"等动词的用法
+   - 重点掌握动词不定式和动名词的区别
+
+2. **词汇提升**
+   - 背诵10个常用动词搭配（如 broaden horizons, enhance skills）
+   - 学习同义词替换，避免重复使用简单词汇
+
+3. **句型练习**
+   - 每天练习写2个复合句（使用状语从句、定语从句）
+   - 学习使用分词短语作状语
+
+### 中期提升（本月目标）
+
+1. **阅读积累**
+   - 每周阅读2篇四级范文
+   - 摘录优秀表达和句型结构
+
+2. **写作练习**
+   - 每周写1篇150词左右的作文
+   - 重点关注论点展开和细节支撑
+
+3. **错误整理**
+   - 建立个人错误档案，记录常犯语法错误
+   - 定期复习，避免重复犯错
+
+### 长期目标
+
+1. **建立写作模板**：整理常用开头、结尾和过渡句
+2. **积累话题素材**：针对常见话题积累例子和论据
+3. **模拟考试训练**：定期进行限时写作练习
 
 ---
 
 ## 🎓 修改后的范文
 
-> With the rapid development of technology, an increasing number of people prefer watching videos online to reading books. However, reading remains of great importance in our lives.
+> In today's digital age, an increasing number of people prefer watching videos online to reading books. However, reading remains of great importance in our lives.
 >
-> First and foremost, reading serves as a gateway to knowledge. Through reading, we can explore history, science, culture and many other fascinating subjects. When we immerse ourselves in a book, our minds can travel across the world and beyond.
+> First and foremost, reading serves as a gateway to knowledge. Through reading, we can explore history, science, culture, and many other fascinating subjects. When we immerse ourselves in a book, our minds can travel across the world and beyond, acquiring valuable insights and perspectives.
 >
-> In the second place, reading significantly enhances our writing skills. By studying well-written articles, we can learn to organize our ideas more effectively and use vocabulary more precisely.
+> Furthermore, reading significantly enhances our writing skills. By studying well-written articles, we learn to organize our ideas more effectively and use vocabulary more precisely. This not only improves our academic performance but also helps us communicate more clearly in everyday life.
 >
-> In conclusion, reading offers countless benefits. It not only broadens our horizons but also helps us become better people.
+> In conclusion, reading offers countless benefits that cannot be replaced by digital media. It not only broadens our horizons but also enriches our inner world, helping us become more thoughtful and well-rounded individuals.
 
 ---
 
 ## 💪 下次改进目标
 
-- [ ] 尝试使用更多复合句
-- [ ] 添加1-2个具体例子
-- [ ] 词汇多样性提升（使用至少2个新表达）
+- [ ] 减少模板化表达，使用更自然的开头
+- [ ] 增加复合句使用（目标：每篇至少3个复合句）
+- [ ] 添加1-2个具体例子支撑论点
+- [ ] 词汇多样性提升（使用至少3个高级表达）
+- [ ] 使用更丰富的连接词（如 moreover, furthermore）
 
 ---
 
-**批改日期**：${new Date().toLocaleDateString()}
-**批改版本**：Mock（离线模式）`;
+**评分参考标准**：CET-4 作文评分标准（满分100分）
+- 内容与观点（25分）：切题度、论点展开、思想深度
+- 语言准确性（25分）：词汇运用、语法正确
+- 连贯与衔接（25分）：逻辑性、过渡词使用、衔接自然
+- 句子结构（25分）：句型多样性、复杂句使用、句子流畅度`;
 
 // 检查是否应该使用Mock模式
 function shouldUseMockMode(settings) {
