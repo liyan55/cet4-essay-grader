@@ -1158,6 +1158,8 @@ button.secondary:hover {
   border: 1px solid var(--border-soft);
   font-size: 13px;
   line-height: 1.6;
+  max-height: 400px;
+  overflow-y: auto;
 }
 .result-content :first-child { margin-top: 0; }
 .result-content :last-child { margin-bottom: 0; }
