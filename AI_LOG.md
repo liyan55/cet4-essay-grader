@@ -253,12 +253,55 @@ Fork memo-in-browser-ag2 and transform it into a CET4 essay grading tool.
 
 ---
 
+## 📝 Iteration 9 - Enhanced Grading Report (2026-05-12)
+
+**Goal:** Improve the grading report with more detailed feedback including scores, strengths, typical grammar errors, and improvement suggestions
+
+**User Request:**
+> 给的评语有点过于简单，评语可以从评分，优点，存在问题与改进建议几个方面来细化一下吗，存在问题中列出典型语法错误，和修改建议
+
+**Key Improvements:**
+
+### background.js - Enhanced Mock Grading Report
+- **评分详情表格**: Added detailed score breakdown with grade levels (A-, B+, B) and comments
+- **文章优点分析**: Split into content aspects and language expression aspects
+- **典型语法错误表格**: Added comprehensive table with:
+  - Original sentence
+  - Error type (e.g., fixed collocation error, verb usage error)
+  - Correction suggestion
+  - Error explanation
+- **词汇搭配问题**: Added table with vocabulary improvement suggestions
+- **句子结构问题**: Added analysis of sentence complexity and variety
+- **逻辑衔接问题**: Added transition word suggestions
+- **分阶段改进建议**: Short-term (weekly), medium-term (monthly), and long-term goals
+- **修改后的范文**: Enhanced sample essay demonstrating improvements
+- **具体改进目标**: Added checkable todo items for next steps
+
+### sidepanel.css - UI Fix
+- Added `max-height: 400px` and `overflow-y: auto` to `.result-content`
+- Fixed issue where long grading reports were cut off
+- Users can now scroll to view complete report content
+
+**Enhanced Report Structure:**
+1. **📊 总体评分**: Detailed score table with grade levels
+2. **✅ 文章优点**: Content aspects + Language expression aspects
+3. **⚠️ 存在问题**: 
+   - Typical grammar errors (table format)
+   - Vocabulary collocation issues
+   - Sentence structure problems
+   - Logic coherence issues
+4. **📝 改进建议**: Short-term, medium-term, long-term
+5. **🎓 修改后的范文**: Enhanced example
+6. **💪 下次改进目标**: Checkable todo list
+
+---
+
 ## 📝 Summary
 
-Total Iterations: 8
+Total Iterations: 9
 Core Pattern: AG2-inspired tool-using agent
 Tools: 5 specialized grading tools + OCR tool
 Framework: Chrome Manifest V3 extension
-Key Features: Dual-mode input (text/image), Multi-image upload (max 5), OCR, multi-agent grading, learning tracking, Fixed bottom action bar, Offline mode with mock data
+Key Features: Dual-mode input (text/image), Multi-image upload (max 5), OCR, multi-agent grading, learning tracking, Fixed bottom action bar, Offline mode with mock data, Enhanced detailed grading report
 
 *[End of AI_LOG]*
