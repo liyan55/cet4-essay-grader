@@ -1325,3 +1325,30 @@ button.secondary:hover {
 }
 .area-card.strongest { border-color: #8bb885; background: #f4f9f3; }
 .area-card.weakest { border-color: #d9836a; background: #fdf7f4; }
+
+.mode-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-top: 12px;
+  border: 1px solid #ffd54f;
+}
+
+.mode-badge {
+  background: #ff9800;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mode-text {
+  color: #e65100;
+  font-size: 13px;
+  line-height: 1.4;
+}

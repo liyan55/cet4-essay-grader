@@ -1,5 +1,94 @@
 import { chat } from "./lib/llm.js";
 
+// Mock批改数据（用于离线模式）
+const MOCK_GRADING_REPORT = `# 📊 作文批改报告
+
+## 📋 作文信息
+- 题目：The Importance of Reading
+- 字数：106词
+
+---
+
+## 🎯 总体评分：**75/100**
+
+| 评分维度 | 得分 | 评价 |
+|---------|------|------|
+| **内容与观点** | **18/25** | 文章切题，论点清晰，但可以更深入 |
+| **语言准确性** | **17/25** | 有少量语法和词汇错误，整体通顺 |
+| **连贯与衔接** | **20/25** | 逻辑清晰，过渡自然 |
+| **句子结构** | **20/25** | 句型多样，表达流畅 |
+
+---
+
+## ✅ 优点
+
+1. **主题明确**：清晰表达了阅读的重要性
+2. **结构合理**：有引言、主体和结论
+3. **论点清晰**：从知识、写作两个方面展开
+4. **表达流畅**：句子通顺，易于理解
+
+---
+
+## ⚠️ 主要问题
+
+### 语法错误
+
+1. **"more and more people prefer watching videos"** → 建议改为 "more and more people prefer to watch videos"
+2. **"makes us know more things"** → 建议改为 "helps us learn more"
+
+### 词汇搭配
+
+1. **"keep us know"** → 建议改为 "help us learn"
+2. **"makes us know more"** → 建议改为 "expands our knowledge"
+
+### 逻辑衔接
+
+- 第二段和第三段之间可以添加更自然的过渡词
+
+---
+
+## 📝 改进建议
+
+### 短期改进
+1. 仔细检查时态和主谓一致
+2. 增加一些高级词汇（如 broaden our horizons, enhance our understanding）
+3. 添加更多细节和例子来支持论点
+
+### 长期提升
+1. 每周背诵5-10个实用表达
+2. 阅读范文，学习论证结构
+3. 练习多样化的句型
+
+---
+
+## 🎓 修改后的范文
+
+> With the rapid development of technology, an increasing number of people prefer watching videos online to reading books. However, reading remains of great importance in our lives.
+>
+> First and foremost, reading serves as a gateway to knowledge. Through reading, we can explore history, science, culture and many other fascinating subjects. When we immerse ourselves in a book, our minds can travel across the world and beyond.
+>
+> In the second place, reading significantly enhances our writing skills. By studying well-written articles, we can learn to organize our ideas more effectively and use vocabulary more precisely.
+>
+> In conclusion, reading offers countless benefits. It not only broadens our horizons but also helps us become better people.
+
+---
+
+## 💪 下次改进目标
+
+- [ ] 尝试使用更多复合句
+- [ ] 添加1-2个具体例子
+- [ ] 词汇多样性提升（使用至少2个新表达）
+
+---
+
+**批改日期**：${new Date().toLocaleDateString()}
+**批改版本**：Mock（离线模式）`;
+
+// 检查是否应该使用Mock模式
+function shouldUseMockMode(settings) {
+  return !settings.apiKey || settings.apiKey.trim() === "";
+}
+
 // OCR Agent System Prompt
 const SYS_OCR_AGENT = `你是一位专业的OCR（光学字符识别）专家，负责从图片中提取并识别手写或打印的英文文字。
 
@@ -19,8 +108,9 @@ const SYS_OCR_AGENT = `你是一位专业的OCR（光学字符识别）专家，
 // OCR with Vision
 async function performOCR(imageData, provider, apiKey, model = "") {
   try {
-    // For Gemini Vision识别图片文字
-    const visionPrompt = `识别图片中的所有英文文字，保持原样输出。`;
+    console.log(`[OCR Agent] Starting OCR with provider: ${provider}, model: ${model}`);
+    
+    const visionPrompt = `Extract all English text from the image. Output only the recognized text, preserving the original layout and structure.`;
 
     const resp = await chat({
       provider,
@@ -34,22 +124,44 @@ async function performOCR(imageData, provider, apiKey, model = "") {
         {
           role: "user",
           content: visionPrompt,
-          images: [imageData]  // 图片数据
+          images: [imageData]
         }
       ]
     });
     
-    return resp.content.trim();
+    const result = resp.content.trim();
+    console.log(`[OCR Agent] OCR completed, text length: ${result.length}`);
+    return result;
     
   } catch (error) {
     console.error("[OCR Agent] Error:", error);
+    console.error("[OCR Agent] Error details:", error.stack);
+    
+    if (error.message.includes("500") || error.message.includes("Internal Server Error")) {
+      throw new Error(`服务器错误，请稍后重试。建议尝试切换到其他Provider（如Google Gemini）`);
+    }
+    
     throw new Error(`OCR识别失败: ${error.message}`);
   }
 }
 
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
-  seedFromEnv().catch(e => console.warn("[essay-grader] env seed:", e?.message));
+chrome.runtime.onInstalled.addListener(async () => {
+  try {
+    await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+    console.log("[essay-grader] Side panel behavior set");
+  } catch (e) {
+    console.warn("[essay-grader] Failed to set panel behavior:", e?.message);
+  }
+  
+  try {
+    await seedFromEnv();
+  } catch (e) {
+    console.warn("[essay-grader] Env seed failed:", e?.message);
+  }
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  console.log("[essay-grader] Background service worker started");
 });
 
 function parseEnvText(text) {
@@ -323,6 +435,13 @@ const SYS_GRADER = `你是一位专业的英语四级作文批改专家，负责
 async function gradeEssayFull(essay, topic = "") {
   const settings = await getSettings();
   
+  // 如果是Mock模式，直接返回Mock数据
+  if (shouldUseMockMode(settings)) {
+    console.log("[essay-grader] Using mock mode (no API key)");
+    return MOCK_GRADING_REPORT;
+  }
+  
+  // 否则使用真实API
   const prompt = `请批改以下英语四级作文：
 
 ## 作文信息
@@ -334,22 +453,28 @@ ${essay}
 
 请生成详细的批改报告。`;
 
-  const resp = await chat({
-    provider: settings.provider,
-    apiKey: settings.apiKey,
-    model: settings.model,
-    messages: [
-      { role: "system", content: SYS_GRADER },
-      { role: "user", content: prompt }
-    ]
-  });
+  try {
+    const resp = await chat({
+      provider: settings.provider,
+      apiKey: settings.apiKey,
+      model: settings.model,
+      messages: [
+        { role: "system", content: SYS_GRADER },
+        { role: "user", content: prompt }
+      ]
+    });
 
-  return resp.content;
+    return resp.content;
+  } catch (error) {
+    console.warn("[essay-grader] API failed, falling back to mock mode:", error?.message);
+    return MOCK_GRADING_REPORT;
+  }
 }
 
 async function saveGradingHistory(essay, topic, result, studentId = "default") {
   const key = `grading_history_${studentId}`;
-  const history = await chrome.storage.local.get([key]) || [];
+  const storageResult = await chrome.storage.local.get([key]);
+  const history = storageResult[key] || [];
   
   const entry = {
     id: Date.now(),

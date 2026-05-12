@@ -10,9 +10,32 @@ window.addEventListener("unhandledrejection", (e) => {
 
 const $ = (id) => document.getElementById(id);
 
-function send(msg) {
+// 检查并显示模式指示器
+async function checkAndShowMode() {
+  try {
+    const { settings } = await send({ type: "settings" });
+    const modeIndicator = $("mode-indicator");
+    
+    // 如果没有API Key，显示离线模式
+    if (!settings.apiKey || settings.apiKey.trim() === "") {
+      modeIndicator.style.display = "flex";
+    } else {
+      modeIndicator.style.display = "none";
+    }
+  } catch (e) {
+    // 默认显示离线模式
+    $("mode-indicator").style.display = "flex";
+  }
+}
+
+function send(msg, timeout = 60000) {
   return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error("请求超时，请检查网络连接或稍后重试"));
+    }, timeout);
+
     chrome.runtime.sendMessage(msg, (resp) => {
+      clearTimeout(timeoutId);
       if (chrome.runtime.lastError) return reject(chrome.runtime.lastError);
       if (!resp) return reject(new Error("No response from background worker"));
       if (!resp.ok) return reject(new Error(resp.error));
@@ -139,6 +162,39 @@ imageUploadArea.addEventListener("drop", (e) => {
   }
 });
 
+// 压缩图片函数
+function compressImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.7) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      
+      if (width > height && width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      } else if (height > maxHeight) {
+        width = (width * maxHeight) / height;
+        height = maxHeight;
+      }
+      
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      canvas.toBlob((blob) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(blob);
+      }, "image/jpeg", quality);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 // 处理文件选择
 async function handleFileSelect(e) {
   const files = Array.from(e.target.files || []);
@@ -158,16 +214,25 @@ async function handleFileSelect(e) {
   }
   
   for (const file of filesToAdd) {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const imageData = event.target.result;
+    try {
+      const compressedData = await compressImage(file);
       currentImages.push({
-        data: imageData,
+        data: compressedData,
         name: file.name
       });
       updateImagePreview();
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Image compression error:", err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        currentImages.push({
+          data: event.target.result,
+          name: file.name
+        });
+        updateImagePreview();
+      };
+      reader.readAsDataURL(file);
+    }
   }
   
   e.target.value = "";
@@ -269,8 +334,17 @@ $("ocr-btn").addEventListener("click", async () => {
     }, 3000);
     
   } catch (e) {
-    statusEl.textContent = `识别失败: ${e.message}`;
     console.error("[OCR] Error:", e);
+    
+    if (e.message.includes("500") || e.message.includes("Internal Server Error")) {
+      statusEl.textContent = "⚠️ 服务器错误，建议切换Provider或使用备用方法";
+    } else if (e.message.includes("401")) {
+      statusEl.textContent = "⚠️ API Key无效，请检查设置";
+    } else {
+      statusEl.textContent = `识别失败: ${e.message}`;
+    }
+    
+    alert(`OCR识别失败！\n\n错误信息: ${e.message}\n\n备用方案：\n1. 使用手机自带OCR识别图片文字\n2. 手动输入作文内容\n3. 检查网络连接或稍后重试`);
   } finally {
     $("ocr-btn").disabled = false;
   }
@@ -580,12 +654,21 @@ $("save-settings").addEventListener("click", async () => {
       $("settings-status").textContent = "";
       closeSettings();
     }, 1000);
+    
+    // 保存后更新模式指示器
+    checkAndShowMode();
   } catch (e) {
     $("settings-status").textContent = `Error: ${e.message}`;
   }
 });
 
 (async () => {
-  const { settings } = await send({ type: "settings" });
-  if (!settings.apiKey) openSettings();
+  try {
+    const { settings } = await send({ type: "settings" });
+    checkAndShowMode();
+    if (!settings.apiKey) openSettings();
+  } catch (e) {
+    // 如果出错，默认显示离线模式
+    $("mode-indicator").style.display = "flex";
+  }
 })();
